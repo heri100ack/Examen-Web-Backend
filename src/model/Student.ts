@@ -1,10 +1,21 @@
 export interface Student {
    id : number; 
    nom : String ; 
-   score : number ;
-
-}
-export interface StudentDTD { 
+   prenom : String ; 
+   score ?: number ;
+   jourDInscritpion : Date ; 
+   CIN: String ;
    
+}
+export interface CreateStudentDTO { 
+   prenom: String ;
+   nom: String ;
+   score: number ; 
+   CIN: String ;
+}
+export interface UpdateStudentDTO{ 
+   prenom?: String ;
+   score?: number ; 
+   nom?: string ;
 }
   
