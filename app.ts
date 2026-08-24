@@ -6,7 +6,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use('/', studentRoutes); // ou app.use('/api', studentRoutes) si tu veux préfixer
+app.use('/api/students', studentRoutes);
 
 app.listen(3000, () => console.log("Server running on port 3000"));
 

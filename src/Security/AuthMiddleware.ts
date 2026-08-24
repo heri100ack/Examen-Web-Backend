@@ -1,39 +1,42 @@
-import { RequestHandler } from 'express';
-import { verifyAccessToken } from './jwt';
-import { AuthentificationCompte, Role } from '../model/Compte';
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import { Role } from '../model/Compte';
 
-const BEARER_PREFIX = 'Bearer ';
-
-declare global {
-  namespace Express {
-    interface Request {
-      authUser?: AuthentificationCompte;
-    }
-  }
+export interface AuthRequest extends Request {
+  user?: {
+    id: number;
+    role: Role;
+    groupeId?: number; 
+  };
 }
 
-export const authenticate: RequestHandler = (req, res, next) => {
-  const authorization = req.headers.authorization;
+export function authMiddleware(req: AuthRequest, res: Response, next: NextFunction): void {
+  const authHeader = req.headers.authorization;
 
-  if (!authorization?.startsWith(BEARER_PREFIX)) {
-    res.status(401).json({ error: 'Missing or malformed Authorization header' });
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    res.status(401).json({ message: 'Token manquant ou mal formé.' });
     return;
   }
+
+  const token = authHeader.split(' ')[1];
+  const secret = process.env.JWT_SECRET || 'votre_cle_par_defaut_dev';
+
   try {
-    req.authUser = verifyAccessToken(authorization.slice(BEARER_PREFIX.length));
+
+    const payload = jwt.verify(token, secret) as {
+      id: number;
+      role: Role;
+      groupeId?: number;
+    };
+
+    req.user = {
+      id: payload.id,
+      role: payload.role,
+      groupeId: payload.groupeId,
+    };
+
     next();
-  } catch {
-    res.status(401).json({ error: 'Invalid or expired token' });
+  } catch (err) {
+    res.status(401).json({ message: 'Token invalide ou expiré.' });
   }
-};
-
-export const authorize =
-  (...roles: Role[]): RequestHandler =>
-  (req, res, next) => {
-    if (!req.authUser || !roles.includes(req.authUser.role)) {
-      res.status(403).json({ error: 'Insufficient permissions' });
-      return;
-    }
-
-    next();
-  };
+}

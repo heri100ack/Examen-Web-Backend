@@ -10,7 +10,6 @@ export class CompteService {
     this.compteRepository = new CompteRepository();
   }
 
-  // Utilitaire privé pour retirer le passwordHash
   private sanitizeCompte(compte: Compte): AuthentificationCompte {
     const { passwordHash, ...rest } = compte;
     return rest;

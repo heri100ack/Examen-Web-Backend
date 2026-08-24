@@ -1,17 +1,19 @@
-import jwt from 'jsonwebtoken';
+import { Request, Response } from 'express';
+import { Login } from '../model/Compte';
+import * as authService from '../Service/AuthService';
 
-const JWT_SECRET = process.env.JWT_SECRET as string;
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h';
+export async function login(req: Request, res: Response): Promise<void> {
+  const credentials: Login = req.body;
 
-export interface JwtPayload {
-  id: number;
-  email: string;
-}
+  if (!credentials.email || !credentials.password) {
+    res.status(400).json({ message: 'Email et mot de passe requis.' });
+    return;
+  }
 
-export function signToken(payload: JwtPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions);
-}
-
-export function verifyToken(token: string): JwtPayload {
-  return jwt.verify(token, JWT_SECRET) as JwtPayload;
+  try {
+    const result = await authService.login(credentials);
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(401).json({ message: err.message });
+  }
 }

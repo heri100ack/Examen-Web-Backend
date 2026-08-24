@@ -1,16 +1,16 @@
-import { Router } from "express";
-import { StudentControler } from "../controler/StudentControler";
-
+import { Router } from 'express';
+import { CompteControler } from '../controler/CompteControler';
+import { authMiddleware } from '../Security/authMiddleware';
+import { requireRole } from '../Security/roleMiddleware';
 
 const router = Router();
-const studentControler = new StudentControler();
+const compteControler = new CompteControler(/* ... */);
 
-router.get('/students', studentControler.getAll);
-router.get('/students/:id', studentControler.getById);
-router.post('/students', studentControler.create);
-router.put('/students/:id', studentControler.update);
-router.patch('/students/:id', studentControler.patch);
-router.delete('/students/:id', studentControler.delete);
+router.use(authMiddleware, requireRole('ADMIN'));
 
+router.get('/', compteControler.getAll);
+router.post('/', compteControler.create);
+router.put('/:id', compteControler.update);
+router.delete('/:id', compteControler.delete);
 
 export default router;

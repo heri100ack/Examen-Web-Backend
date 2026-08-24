@@ -3,23 +3,19 @@ import { CompteRepository } from '../repository/CompteRepository';
 import { AuthService } from '../Service/AuthService';
 import { Role } from '../model/Compte';
 
-export class CompteController {
+export class CompteControler {
   private compteRepository = new CompteRepository();
   private authService = new AuthService();
 
-  async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const id = Number(req.params.id);
-      const compte = await this.compteRepository.findById(id);
-      if (!compte) {
-        res.status(404).json({ message: 'Compte introuvable' });
-        return;
-      }
-      const { passwordHash, ...user } = compte;
-      res.status(200).json(user);
-    } catch (error) {
-      next(error);
-    }
+    const comptes = await this.compteRepository.findAll();
+    const sanitized = comptes.map(({ passwordHash, ...user }) => user);
+    res.status(200).json(sanitized);
+  } catch (error) {
+    next(error);
+  }
+
   }
   async getByRole(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -32,7 +28,7 @@ export class CompteController {
     }
   }
 
-  async register(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { email, password, role } = req.body;
       const newCompte = await this.authService.register(email, password, role);
@@ -42,14 +38,24 @@ export class CompteController {
     }
   }
 
-  async login(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const result = await this.authService.login(req.body);
-      res.status(200).json(result);
-    } catch (error) {
-      next(error);
+  update = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const id = Number(req.params.id);
+    const { email, role } = req.body;
+
+    const updated = await this.compteRepository.update(id, { email, role });
+
+    if (!updated) {
+      res.status(404).json({ message: 'Compte introuvable' });
+      return;
     }
+
+    const { passwordHash, ...user } = updated;
+    res.status(200).json(user);
+  } catch (error) {
+    next(error);
   }
+};
 
   async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -65,4 +71,7 @@ export class CompteController {
       next(error);
     }
   }
+
+
+  
 }
