@@ -9,7 +9,7 @@ import { QuestionAvecReponses, QuestionPublique } from "./Question";
      dateDebut: Date;
      dateFin: Date;
      createdBy: number;  
-     GroupeId : number ;
+     groupeId : number ;
    }
    
   export interface ExamenAvecQuestionsEtLesReponses extends Examen {
