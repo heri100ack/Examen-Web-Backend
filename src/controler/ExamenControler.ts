@@ -36,3 +36,15 @@ export const createExam = async (
   }
 };
 
+export const updateExam = async (
+  req: Request<{ id: string }, {}, Partial<Examen>>, 
+  res: Response
+): Promise<void> => {
+  try {
+    const examId = Number(req.params.id);
+    const updateData = req.body;
+    res.status(200).json({ message: "Exam " + examId + " updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating exam", error });
+  }
+};
