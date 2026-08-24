@@ -19,3 +19,20 @@ export const getExamById = async (req: Request<{ id: string }>, res: Response): 
   }
 };
 
+export const createExam = async (
+  req: Request<{}, {}, Omit<Examen, 'id' | 'dateCreation'>>, 
+  res: Response
+): Promise<void> => {
+  try {
+    const { matiereId, titre, dateDebut, dateFin, createdBy, groupeId } = req.body;
+
+    if (!titre || !matiereId || !groupeId) {
+      res.status(400).json({ message: "Title, subject ID, and group ID are required." });
+      return;
+    }
+    res.status(201).json({ message: "Exam created successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error creating exam", error });
+  }
+};
+
