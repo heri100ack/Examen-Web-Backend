@@ -48,3 +48,12 @@ export const updateExam = async (
     res.status(500).json({ message: "Error updating exam", error });
   }
 };
+
+export const deleteExam = async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+  try {
+    const examId = Number(req.params.id);
+    res.status(200).json({ message: "Examen " + examId + " deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting exam", error });
+  }
+};
