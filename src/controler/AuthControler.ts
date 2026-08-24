@@ -13,7 +13,7 @@ export async function login(req: Request, res: Response): Promise<void> {
   try {
     const result = await authService.login(credentials);
     res.status(200).json(result);
-  } catch (err) {
+  } catch (err: any) {
     res.status(401).json({ message: err.message });
   }
 }
