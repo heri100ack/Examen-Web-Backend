@@ -10,3 +10,12 @@ export const getAllExams = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
+export const getExamById = async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+  try {
+    const examId = Number(req.params.id);
+    res.status(200).json({ id: examId });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error });
+  }
+};
+
