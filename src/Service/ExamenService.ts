@@ -1,4 +1,4 @@
-import { Examen, ExamenPublique } from '../model/Examen';
+import { Examen, ExamenPublique, ExamenAvecQuestionsEtLesReponses } from '../model/Examen';
 
 export class ExamenService {
 async getAllExams(): Promise<ExamenPublique[]> {
@@ -18,9 +18,16 @@ async createExam(data: Omit<Examen, 'id' | 'dateCreation'>): Promise<Examen> {
 
 async updateExam(id: number, updateData: Partial<Examen>): Promise<Examen | null> {
     return null;
-  }
+}
 
 async deleteExam(id: number): Promise<boolean> {
     return true;
-  }
 }
+
+async getFullExam(id: number): Promise<ExamenAvecQuestionsEtLesReponses | null> {
+    return null;
+}
+
+}
+
+export const examenService = new ExamenService();
