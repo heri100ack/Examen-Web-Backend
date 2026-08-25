@@ -1,7 +1,7 @@
 import { Examen, ExamenPublique } from '../model/Examen';
 
 export class ExamenService {
-    async getAllExams(): Promise<ExamenPublique[]> {
+async getAllExams(): Promise<ExamenPublique[]> {
         const examens: ExamenPublique[] = [];
     return examens;
   }
@@ -9,4 +9,11 @@ export class ExamenService {
 async getExamById(id: number): Promise<Examen | null> {
     return null;
 }
+
+async createExam(data: Omit<Examen, 'id' | 'dateCreation'>): Promise<Examen> {
+    const newExam: Examen = { id: Date.now(),...data, dateCreation: new Date()
+    };
+    return newExam;
+  }
+
 }
