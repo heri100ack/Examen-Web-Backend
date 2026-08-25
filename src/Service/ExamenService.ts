@@ -16,4 +16,11 @@ async createExam(data: Omit<Examen, 'id' | 'dateCreation'>): Promise<Examen> {
     return newExam;
   }
 
+async updateExam(id: number, updateData: Partial<Examen>): Promise<Examen | null> {
+    return null;
+  }
+
+async deleteExam(id: number): Promise<boolean> {
+    return true;
+  }
 }
