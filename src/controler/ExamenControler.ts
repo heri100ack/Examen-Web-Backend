@@ -1,7 +1,12 @@
 import { Request, Response } from 'express';
 import { Examen, ExamenPublique } from '../model/Examen';
+import { ExamenService } from '../Service/ExamenService';
+import { CreateQuestion, Question } from '../model/Question';
 
-export const getAllExams = async (req: Request, res: Response): Promise<void> => {
+export class ExamenControler { 
+  constructor(private examenService: ExamenService) {}
+
+ getAllExams = async (req: Request, res: Response): Promise<void> => {
   try {
     const examens: ExamenPublique[] = []; 
     res.status(200).json(examens);
@@ -10,7 +15,7 @@ export const getAllExams = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
-export const getExamById = async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+ getExamById = async (req: Request<{ id: string }>, res: Response): Promise<void> => {
   try {
     const examId = Number(req.params.id);
     res.status(200).json({ id: examId });
@@ -19,7 +24,7 @@ export const getExamById = async (req: Request<{ id: string }>, res: Response): 
   }
 };
 
-export const createExam = async (
+ createExam = async (
   req: Request<{}, {}, Omit<Examen, 'id' | 'dateCreation'>>, 
   res: Response
 ): Promise<void> => {
@@ -36,7 +41,7 @@ export const createExam = async (
   }
 };
 
-export const updateExam = async (
+  updateExam = async (
   req: Request<{ id: string }, {}, Partial<Examen>>, 
   res: Response
 ): Promise<void> => {
@@ -49,7 +54,7 @@ export const updateExam = async (
   }
 };
 
-export const deleteExam = async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+  deleteExam = async (req: Request<{ id: string }>, res: Response): Promise<void> => {
   try {
     const examId = Number(req.params.id);
     res.status(200).json({ message: "Examen " + examId + " deleted successfully" });
@@ -57,3 +62,53 @@ export const deleteExam = async (req: Request<{ id: string }>, res: Response): P
     res.status(500).json({ message: "Error deleting exam", error });
   }
 };
+  // router.get('/:id/questions', examenControler.getQuestions);
+  // router.post('/:id/questions', examenControler.addQuestion);
+  
+  // router.get('/:id/results', examenControler.getExamResults);
+
+  getAllQuestionOfExam = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const examenId = req.params.id; 
+    const questions = await this.examenService.getAllQuestions(examenId);
+    res.status(200).json(questions);
+  } catch (error) {
+    res.status(500).json({ message: "Error when intercepting exams", error });
+  }
+};
+
+  createQuestionOfExam = async (req: Request <{ examenId: number },{},CreateQuestion>,
+    res: Response): Promise<void> => {
+  try {
+    const { examenId } = req.params.id;
+    const { texte, type, points } = req.body;
+    const nouvelleQuestion = { 
+      examenId, 
+      texte ,
+      type ,
+      points 
+    }
+    
+    if (!examenId || !points || !type || !texte) {
+      res.status(400).json({ message: "L'ID de l'examen, le type et les points sont requis." });
+      return;
+    }
+    await this.examenService.AddQuestion(nouvelleQuestion);
+    
+    res.status(201).json({ message: "Question créée avec succès" });
+  } catch (error) {
+    res.status(500).json({ message: "Error creating question", error });
+  }
+}; 
+
+  getExamResults = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const examenId = req.params.id; 
+    const questions = await ExamenService.getAllResuslts(examenId);
+    res.status(200).json(questions);
+  } catch (error) {
+    res.status(500).json({ message: "Error when intercepting exams", error });
+  }
+};
+ 
+}

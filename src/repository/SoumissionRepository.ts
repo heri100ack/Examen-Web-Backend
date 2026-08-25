@@ -1,4 +1,4 @@
-import { promises } from 'node:dns';
+
 import pool from '../configuration/database';
 import { CreateSoumissionDTO, Soumission } from '../model/Soumission';
 
@@ -35,6 +35,12 @@ export class SoumissionRepository {
 
     return result.rows[0];
   }
-
+    async findByExamen (ExamId : number ): Promise <Soumission[]>{ 
+      const recup = await pool.query(
+        'SELECT * FROM soumission WHERE examen_id = $1', 
+        [ExamId]
+      ); 
+      return recup.rows||null;
+    }
 
 }

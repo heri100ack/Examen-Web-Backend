@@ -11,7 +11,7 @@ import { ResponseRepository } from "../repository/ResponseRepository";
 import { SoumissionRepository } from "../repository/SoumissionRepository";
 import { ResponsesEtudiantRepository } from "../repository/ResponsesEtudiantRepository";
 import { ResponsesEtudiant } from "../model/ResponsesEtudiant";
-import { CompteEleve } from "../model/Compte";
+
 
 
 
@@ -106,7 +106,7 @@ export class MyService{
 
     return Promise.all(
         soumissions.map(async (soumission: Soumission): Promise<Resultat> => {
-            // 1. Récupération parallèle des données de l'examen et de la soumission
+            
             const [reponsesEtudiant, listQuestions, examen] = await Promise.all([
                 this.responsesEtudiantRepository.findBySoumissionId(soumission.id),
                 this.questionRepository.findByExamenId(soumission.examenId),
@@ -134,6 +134,7 @@ export class MyService{
 
             return {
                 idExamen: soumission.examenId,
+                EtudiantId: studentId,
                 note: note,
                 total: barèmeTotal,
                 examenTitre: examen?.titre ?? 'Examen supprimé',

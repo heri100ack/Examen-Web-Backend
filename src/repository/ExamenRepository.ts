@@ -18,5 +18,5 @@ export class ExamenRepository {
       [GroupeId]
     ); 
     return recup.rows||null;
-  }
+    }
 }
