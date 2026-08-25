@@ -14,7 +14,7 @@ async createExam(data: Omit<Examen, 'id' | 'dateCreation'>): Promise<Examen> {
     const newExam: Examen = { id: Date.now(),...data, dateCreation: new Date()
     };
     return newExam;
-  }
+}
 
 async updateExam(id: number, updateData: Partial<Examen>): Promise<Examen | null> {
     return null;

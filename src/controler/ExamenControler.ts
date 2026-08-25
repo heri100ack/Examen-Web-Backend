@@ -1,7 +1,9 @@
 import { Request, Response } from 'express';
 import { Examen, ExamenPublique } from '../model/Examen';
+import { ExamenService } from '../Service/ExamenService';
 
 export class ExamenControler {
+  private examenService = new ExamenService();
 
 async getAllExams(req: Request, res: Response): Promise<void> {
   try {
