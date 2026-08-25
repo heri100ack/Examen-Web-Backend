@@ -1,7 +1,9 @@
 import { Request, Response } from 'express';
 import { Examen, ExamenPublique } from '../model/Examen';
 
-export const getAllExams = async (req: Request, res: Response): Promise<void> => {
+export class ExamenControler {
+
+async getAllExams(req: Request, res: Response): Promise<void> {
   try {
     const examens: ExamenPublique[] = []; 
     res.status(200).json(examens);
@@ -10,7 +12,7 @@ export const getAllExams = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
-export const getExamById = async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+async getExamById(req: Request<{ id: string }>, res: Response): Promise<void> {
   try {
     const examId = Number(req.params.id);
     res.status(200).json({ id: examId });
@@ -19,10 +21,10 @@ export const getExamById = async (req: Request<{ id: string }>, res: Response): 
   }
 };
 
-export const createExam = async (
+async createExam(
   req: Request<{}, {}, Omit<Examen, 'id' | 'dateCreation'>>, 
   res: Response
-): Promise<void> => {
+): Promise<void> {
   try {
     const { matiereId, titre, dateDebut, dateFin, createdBy, groupeId } = req.body;
 
@@ -36,10 +38,10 @@ export const createExam = async (
   }
 };
 
-export const updateExam = async (
+async updateExam(
   req: Request<{ id: string }, {}, Partial<Examen>>, 
   res: Response
-): Promise<void> => {
+): Promise<void> {
   try {
     const examId = Number(req.params.id);
     const updateData = req.body;
@@ -49,11 +51,15 @@ export const updateExam = async (
   }
 };
 
-export const deleteExam = async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+async deleteExam(req: Request<{ id: string }>, res: Response): Promise<void> {
   try {
     const examId = Number(req.params.id);
     res.status(200).json({ message: "Examen " + examId + " deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error deleting exam", error });
   }
-};
+}
+
+}
+
+export const examenControler = new ExamenControler();
