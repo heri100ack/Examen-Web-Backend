@@ -1,4 +1,4 @@
-import { Examen } from "./Examen";
+
 
    export interface Cours {
      id: number;

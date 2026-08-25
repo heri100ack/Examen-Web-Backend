@@ -1,95 +1,100 @@
 import { Request, Response } from 'express';
-import { Examen, ExamenPublique } from '../model/Examen';
+import { Examen } from '../model/Examen';
 import { ExamenService } from '../Service/ExamenService';
-<<<<<<< HEAD
-import { CreateQuestion, Question } from '../model/Question';
+import { CreateQuestion } from '../model/Question';
 
 export class ExamenControler { 
   constructor(private examenService: ExamenService) {}
 
  getAllExams = async (req: Request, res: Response): Promise<void> => {
-=======
-
-export class ExamenControler {
-  private examenService = new ExamenService();
-
-async getAllExams(req: Request, res: Response): Promise<void> {
->>>>>>> 0938a08bb83e18e85534ae6679cd005376a1f4c8
   try {
-    const examens: ExamenPublique[] = []; 
+
+    const examens : Examen[] = await this.examenService.getAllExamens(); 
     res.status(200).json(examens);
   } catch (error) {
     res.status(500).json({ message: "Error when intercepting exams", error });
   }
 };
 
-<<<<<<< HEAD
- getExamById = async (req: Request<{ id: string }>, res: Response): Promise<void> => {
-=======
-async getExamById(req: Request<{ id: string }>, res: Response): Promise<void> {
->>>>>>> 0938a08bb83e18e85534ae6679cd005376a1f4c8
+ getExamById = async (req: Request, res: Response): Promise<void> => {
   try {
     const examId = Number(req.params.id);
+    const Exam = await this.examenService.getExamById(examId);
     res.status(200).json({ id: examId });
   } catch (error) {
     res.status(500).json({ message: "Internal server error", error });
   }
 };
 
-<<<<<<< HEAD
- createExam = async (
-=======
-async createExam(
->>>>>>> 0938a08bb83e18e85534ae6679cd005376a1f4c8
-  req: Request<{}, {}, Omit<Examen, 'id' | 'dateCreation'>>, 
-  res: Response
-): Promise<void> {
+ createExam = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { matiereId, titre, dateDebut, dateFin, createdBy, groupeId } = req.body;
+    const { matiereId, titre, dateDebut, dateFin, groupeId } = req.body as Omit<Examen, 'id' | 'dateCreation'>;
 
-    if (!titre || !matiereId || !groupeId) {
-      res.status(400).json({ message: "Title, subject ID, and group ID are required." });
+    if (!titre || !matiereId || !groupeId || !dateDebut || !dateFin) {
+      res.status(400).json({ message: "Title, subject ID, group ID, and dates are required." });
       return;
     }
+
+    if (new Date(dateDebut) > new Date(dateFin)) { 
+      res.status(422).json({ message: "Les dates ne coïncident pas." });
+      return;
+    }
+
     res.status(201).json({ message: "Exam created successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error creating exam", error });
   }
 };
 
-<<<<<<< HEAD
-  updateExam = async (
-=======
-async updateExam(
->>>>>>> 0938a08bb83e18e85534ae6679cd005376a1f4c8
-  req: Request<{ id: string }, {}, Partial<Examen>>, 
-  res: Response
-): Promise<void> {
+  updateExam = async (req: Request, res: Response): Promise<void> => {
   try {
     const examId = Number(req.params.id);
-    const updateData = req.body;
-    res.status(200).json({ message: "Exam " + examId + " updated successfully" });
+
+    if (isNaN(examId)) {
+      res.status(400).json({ message: "ID invalide" });
+      return;
+    }
+
+    const updateData = req.body as Partial<Examen>;
+
+    if (Object.keys(updateData).length === 0) {
+      res.status(400).json({ message: "Aucune donnée fournie pour la mise à jour." });
+      return;
+    }
+    const updatedExam = await this.examenService.updateExam(examId, updateData);
+    res.status(200).json({ 
+      message: `Exam ${examId} updated successfully`,
+      data: updateData 
+    });
   } catch (error) {
     res.status(500).json({ message: "Error updating exam", error });
   }
 };
 
-<<<<<<< HEAD
-  deleteExam = async (req: Request<{ id: string }>, res: Response): Promise<void> => {
-=======
-async deleteExam(req: Request<{ id: string }>, res: Response): Promise<void> {
->>>>>>> 0938a08bb83e18e85534ae6679cd005376a1f4c8
+  deleteExam = async (req: Request, res: Response): Promise<void> => {
   try {
     const examId = Number(req.params.id);
-    res.status(200).json({ message: "Examen " + examId + " deleted successfully" });
+
+    if (isNaN(examId)) {
+      res.status(400).json({ message: "ID d'examen invalide." });
+      return;
+    }
+    
+    const isDeleted = await this.examenService.deleteExam(examId);
+
+    if (!isDeleted) {
+      res.status(404).json({ message: `Examen ${examId} introuvable.` });
+      return;
+    }
+
+    res.status(200).json({ message: `Examen ${examId} supprimé avec succès.` });
   } catch (error) {
-    res.status(500).json({ message: "Error deleting exam", error });
+    res.status(500).json({ message: "Erreur lors de la suppression de l'examen", error });
   }
-<<<<<<< HEAD
 };
+
   // router.get('/:id/questions', examenControler.getQuestions);
   // router.post('/:id/questions', examenControler.addQuestion);
-  
   // router.get('/:id/results', examenControler.getExamResults);
 
   getAllQuestionOfExam = async (req: Request, res: Response): Promise<void> => {
@@ -129,7 +134,7 @@ async deleteExam(req: Request<{ id: string }>, res: Response): Promise<void> {
   getExamResults = async (req: Request, res: Response): Promise<void> => {
   try {
     const examenId = req.params.id; 
-    const questions = await ExamenService.getAllResuslts(examenId);
+    const questions = await this.examenService.getAllResuslts(examenId);
     res.status(200).json(questions);
   } catch (error) {
     res.status(500).json({ message: "Error when intercepting exams", error });
@@ -137,10 +142,3 @@ async deleteExam(req: Request<{ id: string }>, res: Response): Promise<void> {
 };
  
 }
-=======
-}
-
-}
-
-export const examenControler = new ExamenControler();
->>>>>>> 0938a08bb83e18e85534ae6679cd005376a1f4c8

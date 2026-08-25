@@ -15,15 +15,35 @@ export class ExamenService {
     private responseRepository = new ResponseRepository;
     private responseEtudiantRepository =new ResponsesEtudiantRepository;
     
-    
+    async getAllExamens():Promise<Examen[]>{
+        const Examens = this.examenRepository.findAll();
+     return Examens ;
+    }
+
     async getAllQuestions(Examen: number ): Promise<Question[]> {
         const Questions = this.questionRepository.findByExamenId(Examen);
     
      return Questions;
     }
 
+    async getExamById (Examen: number ): Promise<Examen> {
+        const Exam = this.examenRepository.getExamenById(Examen);
+
+     return Exam;
+    }
+
+    async updateExam(id: number, data: Partial<Examen>): Promise<Examen | null> {
+    if (data.dateDebut && data.dateFin && new Date(data.dateDebut) > new Date(data.dateFin)) {
+      throw new Error("La date de début ne peut pas être supérieure à la date de fin.");
+    }
+    return await this.examenRepository.update(id, data);
+  }
+
     async AddQuestion(nouvelleQuestion : CreateQuestion){ 
         this.questionRepository.Save(nouvelleQuestion);
+    }
+    async deleteExam(ExamId: number) : Promise <boolean>{ 
+        return this.examenRepository.delete(ExamId);
     }
 
     async getAllResuslts(examenId: number): Promise <Resultat[]>{
