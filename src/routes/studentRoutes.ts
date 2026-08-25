@@ -1,16 +1,16 @@
 import { Router } from 'express';
-import { CompteControler } from '../controler/CompteControler';
+import { StudentController } from '../controler/StudentController';
 import { authMiddleware } from '../Security/authMiddleware';
 import { requireRole } from '../Security/roleMiddleware';
 
 const router = Router();
-const compteControler = new CompteControler(/* ... */);
+const controller = new StudentController();
 
 router.use(authMiddleware, requireRole('ADMIN'));
 
-router.get('/', compteControler.getAll);
-router.post('/', compteControler.create);
-router.put('/:id', compteControler.update);
-router.delete('/:id', compteControler.delete);
+router.get('/', controller.getAll.bind(controller));
+router.post('/', controller.create.bind(controller));
+router.put('/:id', controller.update.bind(controller));
+router.delete('/:id', controller.delete.bind(controller));
 
 export default router;
