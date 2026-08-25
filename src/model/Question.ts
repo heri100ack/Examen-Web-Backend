@@ -16,3 +16,5 @@ export interface QuestionAvecReponses extends Question {
 export interface QuestionPublique extends Question {
   reponses: ReponsePublique[];
 }
+
+export type CreateQuestion = Omit<Question, 'id'>;

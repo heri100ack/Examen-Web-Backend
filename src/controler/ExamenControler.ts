@@ -1,12 +1,20 @@
 import { Request, Response } from 'express';
 import { Examen, ExamenPublique } from '../model/Examen';
 import { ExamenService } from '../Service/ExamenService';
+<<<<<<< HEAD
 import { CreateQuestion, Question } from '../model/Question';
 
 export class ExamenControler { 
   constructor(private examenService: ExamenService) {}
 
  getAllExams = async (req: Request, res: Response): Promise<void> => {
+=======
+
+export class ExamenControler {
+  private examenService = new ExamenService();
+
+async getAllExams(req: Request, res: Response): Promise<void> {
+>>>>>>> 0938a08bb83e18e85534ae6679cd005376a1f4c8
   try {
     const examens: ExamenPublique[] = []; 
     res.status(200).json(examens);
@@ -15,7 +23,11 @@ export class ExamenControler {
   }
 };
 
+<<<<<<< HEAD
  getExamById = async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+=======
+async getExamById(req: Request<{ id: string }>, res: Response): Promise<void> {
+>>>>>>> 0938a08bb83e18e85534ae6679cd005376a1f4c8
   try {
     const examId = Number(req.params.id);
     res.status(200).json({ id: examId });
@@ -24,10 +36,14 @@ export class ExamenControler {
   }
 };
 
+<<<<<<< HEAD
  createExam = async (
+=======
+async createExam(
+>>>>>>> 0938a08bb83e18e85534ae6679cd005376a1f4c8
   req: Request<{}, {}, Omit<Examen, 'id' | 'dateCreation'>>, 
   res: Response
-): Promise<void> => {
+): Promise<void> {
   try {
     const { matiereId, titre, dateDebut, dateFin, createdBy, groupeId } = req.body;
 
@@ -41,10 +57,14 @@ export class ExamenControler {
   }
 };
 
+<<<<<<< HEAD
   updateExam = async (
+=======
+async updateExam(
+>>>>>>> 0938a08bb83e18e85534ae6679cd005376a1f4c8
   req: Request<{ id: string }, {}, Partial<Examen>>, 
   res: Response
-): Promise<void> => {
+): Promise<void> {
   try {
     const examId = Number(req.params.id);
     const updateData = req.body;
@@ -54,13 +74,18 @@ export class ExamenControler {
   }
 };
 
+<<<<<<< HEAD
   deleteExam = async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+=======
+async deleteExam(req: Request<{ id: string }>, res: Response): Promise<void> {
+>>>>>>> 0938a08bb83e18e85534ae6679cd005376a1f4c8
   try {
     const examId = Number(req.params.id);
     res.status(200).json({ message: "Examen " + examId + " deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error deleting exam", error });
   }
+<<<<<<< HEAD
 };
   // router.get('/:id/questions', examenControler.getQuestions);
   // router.post('/:id/questions', examenControler.addQuestion);
@@ -112,3 +137,10 @@ export class ExamenControler {
 };
  
 }
+=======
+}
+
+}
+
+export const examenControler = new ExamenControler();
+>>>>>>> 0938a08bb83e18e85534ae6679cd005376a1f4c8
