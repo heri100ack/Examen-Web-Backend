@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Examen, ExamenAvecQuestionsEtLesReponses, ExamenPublique } from '../model/Examen';
+import { Examen, ExamenPublique } from '../model/Examen';
 
 export const getAllExams = async (req: Request, res: Response): Promise<void> => {
   try {
