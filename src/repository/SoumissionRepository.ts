@@ -22,13 +22,13 @@ export class SoumissionRepository {
   }
 
 //    probleme de creation avec ce code 
-   async create(data: CreateSoumissionDTO): Promise<Soumission> {
+   async create(data: Omit <Soumission,'id'>): Promise<Soumission> {
     const query = `
       INSERT INTO soumission (user_id, examen_id, date_soumission)
       VALUES ($1, $2, $3)
       RETURNING *
     `;
-
+    
     const values = [data.userId, data.examenId, data.dateSoumission];
     const result = await pool.query<Soumission>(query, values);
 

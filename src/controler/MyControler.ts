@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { AuthRequest } from '../Security/AuthMiddleware';
 import { MyService } from '../Service/MyService';
-import { CreateSoumissionDTO } from '../model/Soumission';
+import { CreateSoumissionDTO, SoumissionAvecReponses } from '../model/Soumission';
 
 export class MyControler {
   
@@ -60,10 +60,12 @@ export class MyControler {
         return;
       }
 
-      const soumissionData: CreateSoumissionDTO = {
+      const soumissionData :Omit <SoumissionAvecReponses, 'id'> = {
+        
         userId: req.user!.id, 
         examenId: examId,
         dateSoumission: new Date(),
+        reponses: reponses
       };
 
       

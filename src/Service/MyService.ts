@@ -1,7 +1,7 @@
 
 
 import { Examen, ExamenAvecQuestionsEtLesReponses, ExamenPublique } from "../model/Examen";
-import { CreateSoumissionDTO, Soumission } from "../model/Soumission";
+import { CreateSoumissionDTO, Soumission, SoumissionAvecReponses } from "../model/Soumission";
 import { Question, QuestionAvecReponses, QuestionPublique } from "../model/Question";
 import { Reponse, toReponsesPubliques } from "../model/Response";
 import { Resultat } from "../model/Resultat";
@@ -84,7 +84,7 @@ export class MyService{
         return this.buildExamenAvecQuestions(examen); 
     }
 
-    async submitExamen(data: CreateSoumissionDTO, id: number): Promise<CreateSoumissionDTO | null> {
+    async submitExamen(data: Omit <SoumissionAvecReponses, 'id'>, id: number): Promise<Omit <SoumissionAvecReponses, 'id'> | null> {
         const examen = await this.examenRepository.getExamenById(id);
         if (examen == null) return null;
 
@@ -92,6 +92,14 @@ export class MyService{
         if (dejaSoumis) {
             throw new Error('Cet examen a déjà été soumis.');
         }
+        const questionsTraitees = new Set<number>();
+
+            for (const rep of data.reponses) {
+            if (questionsTraitees.has(rep.questionId)) {
+                throw new Error(`Une seule réponse est autorisée par question (doublon sur la question ID: ${rep.questionId}).`);
+            }
+            questionsTraitees.add(rep.questionId);
+            }
 
         const soumission = await this.soumissionRepository.create({
             userId: data.userId,
@@ -99,7 +107,13 @@ export class MyService{
             dateSoumission: new Date(),
         });
 
-        return soumission; 
+        for (const rep of data.reponses){
+        await this.responsesEtudiantRepository.CreateReponsesBySoumissionId(soumission.id,rep);
+        }
+        return {
+            ...soumission,
+            reponses: data.reponses
+        };
     }
 
 
