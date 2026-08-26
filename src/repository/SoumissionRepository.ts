@@ -30,7 +30,6 @@ export class SoumissionRepository {
     `;
 
     const values = [data.userId, data.examenId, data.dateSoumission];
-
     const result = await pool.query<Soumission>(query, values);
 
     return result.rows[0];

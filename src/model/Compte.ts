@@ -19,7 +19,7 @@ export interface CompteEleve extends BaseCompte {
   debutAnnee: Date;
   finAnnee: Date;
 }
-
+export type CreationCompte = Omit<CompteAdmin, 'id'> | Omit<CompteEleve, 'id'>;
 
 export type Compte = CompteAdmin | CompteEleve;
 

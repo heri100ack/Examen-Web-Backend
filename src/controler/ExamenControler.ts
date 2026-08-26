@@ -99,7 +99,7 @@ export class ExamenControler {
 
   getAllQuestionOfExam = async (req: Request, res: Response): Promise<void> => {
   try {
-    const examenId = req.params.id; 
+    const examenId = Number(req.params.id); 
     const questions = await this.examenService.getAllQuestions(examenId);
     res.status(200).json(questions);
   } catch (error) {
@@ -107,33 +107,38 @@ export class ExamenControler {
   }
 };
 
-  createQuestionOfExam = async (req: Request <{ examenId: number },{},CreateQuestion>,
-    res: Response): Promise<void> => {
+  createQuestionOfExam = async (
+  req: Request<{ examenId: string }, {}, CreateQuestion>,
+  res: Response
+): Promise<void> => {
   try {
-    const { examenId } = req.params.id;
+  
+    const examenId = Number(req.params.examenId);
     const { texte, type, points } = req.body;
-    const nouvelleQuestion = { 
-      examenId, 
-      texte ,
-      type ,
-      points 
-    }
-    
-    if (!examenId || !points || !type || !texte) {
-      res.status(400).json({ message: "L'ID de l'examen, le type et les points sont requis." });
+
+    if (isNaN(examenId) || !points || !type || !texte) {
+      res.status(400).json({ message: "L'ID de l'examen, le texte, le type et les points sont requis." });
       return;
     }
+
+    const nouvelleQuestion = { 
+      examenId, 
+      texte,
+      type,
+      points 
+    };
+    
     await this.examenService.AddQuestion(nouvelleQuestion);
     
     res.status(201).json({ message: "Question créée avec succès" });
   } catch (error) {
     res.status(500).json({ message: "Error creating question", error });
   }
-}; 
+};
 
   getExamResults = async (req: Request, res: Response): Promise<void> => {
   try {
-    const examenId = req.params.id; 
+    const examenId = Number(req.params.id); 
     const questions = await this.examenService.getAllResuslts(examenId);
     res.status(200).json(questions);
   } catch (error) {

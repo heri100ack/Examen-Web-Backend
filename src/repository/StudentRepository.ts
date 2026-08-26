@@ -1,61 +1,103 @@
 
-import { Student, CreateStudentDTO, UpdateStudentDTO } from '../model/Student';
+
 import  pool  from '../db';
+import { Compte ,CompteEleve } from '../model/Compte';
 
 export class StudentRepository {
-  async findAll(): Promise<Student[]> {
-    const recup = await pool.query('SELECT * FROM student');
+  async findAll(): Promise<Omit<CompteEleve,'passwordHash'>[]> {
+    const recup = await pool.query('SELECT * FROM compte WHERE Role = $1',[]);
     return recup.rows;
   }
-  async findById(id: number): Promise<Student | null> {
+  async findById(id: number): Promise<Omit<CompteEleve,'passwordHash'>> {
     const recup = await pool.query(
       'SELECT * FROM student WHERE id = $1', 
       [id]
     ); 
     return recup.rows[0]||null;
   }
-  async findByCIN(CIN : String ) : Promise<Student | null>{ 
-    const recup = await pool.query(
-      'SELECT * FROM student Where CIN = $1', 
-      [CIN]
-    )
-    return recup.rows[0]||null;
-  }
-  async create(data: CreateStudentDTO): Promise<Student> {
-    const recup = await pool.query(
-      'INSERT INTO student ( nom , score , date_d_inscription , prenom)VALUES ($1,$2,$3,NOW(),$5)'
-      ,
-      [ data.nom , data.score , data.prenom]
-    ); 
-    return recup.rows[0];
-  }
+  async create(data: Omit<CompteEleve, 'id'>): Promise<Omit<CompteEleve, 'passwordHash'>> {
+  const query = `
+    INSERT INTO student (
+      nom, 
+      email, 
+      password_hash, 
+      role, 
+      groupe_id, 
+      debut_annee, 
+      fin_annee
+    ) 
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
+    RETURNING 
+      id, 
+      nom, 
+      email, 
+      role, 
+      groupe_id AS "groupeId", 
+      debut_annee AS "debutAnnee", 
+      fin_annee AS "finAnnee";
+  `;
 
-  async update(id: number, data: UpdateStudentDTO): Promise<Student | null> {
- 
-  const existingStudent = await this.findById(id);
-  if (!existingStudent) return null;
+  const values = [
+    data.nom,
+    data.email,
+    data.passwordHash,
+    data.role,
+    data.groupeId,
+    data.debutAnnee,
+    data.finAnnee
+  ];
 
-  const updatedData = {
-    nom: data.nom !== undefined ? data.nom : existingStudent.nom,
-    prenom: data.prenom !== undefined ? data.prenom : existingStudent.prenom,
-    score: data.score !== undefined ? data.score : existingStudent.score,
-  };
-
-  const result = await pool.query(
-    `UPDATE students 
-     SET nom = $1, prenom = $2, score = $3 
-     WHERE id = $4 RETURNING *`,
-    [updatedData.nom, updatedData.prenom, updatedData.score, id]
-  );
-
-  return result.rows[0] || null;
+  const recup = await pool.query<Omit<CompteEleve, 'passwordHash'>>(query, values);
+  return recup.rows[0];
 }
 
-  async delete(id: number): Promise<Student | null> {
+  async update(
+  id: number, 
+  data: Partial<Omit<CompteEleve, 'id'>>
+): Promise<Omit<CompteEleve, 'passwordHash'> | null> {
+  const query = `
+    UPDATE compte
+    SET 
+      nom = COALESCE($1, nom),
+      email = COALESCE($2, email),
+      groupe_id = COALESCE($3, groupe_id),
+      debut_annee = COALESCE($4, debut_annee),
+      fin_annee = COALESCE($5, fin_annee)
+    WHERE id = $6 
+    RETURNING 
+      id, 
+      nom, 
+      email, 
+      role, 
+      groupe_id AS "groupeId", 
+      debut_annee AS "debutAnnee", 
+      fin_annee AS "finAnnee";
+  `;
+
+  const values = [
+    data.nom ?? null,
+    data.email ?? null,
+    data.groupeId ?? null,
+    data.debutAnnee ?? null,
+    data.finAnnee ?? null,
+    id
+  ];
+
+  const result = await pool.query<Omit<CompteEleve, 'passwordHash'>>(query, values);
+
+   if (!result.rows[0]) {
+    return null;
+  }
+
+  return result.rows[0];
+}
+
+  async delete(id: number): Promise<boolean> {
     const recup = await pool.query(
-      'DELETE * FROM student WHERE id =$1',
+      'DELETE * FROM student WHERE id =$1 RETURNING id',
       [id]
     )
-    return recup.rows[0];
+    return recup.rowCount !== null && recup.rowCount > 0; 
   } 
+  
 }

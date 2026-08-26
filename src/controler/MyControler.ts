@@ -40,33 +40,37 @@ export class MyControler {
     }
   };
 
-  submitExam = async (req: AuthRequest, res: Response): Promise<void> => {
-    
+  submitExam = async (
+    req: AuthRequest,
+    res: Response
+  ): Promise<void> => {
     try {
-      if (!req.user) {
-        res.status(401).json({ message: 'Non authentifié.' });
+      const { id } = req.params as { id: string };
+      const examId = Number(id);
+      
+      if (isNaN(examId)) {
+        res.status(400).json({ message: "L'identifiant de l'examen est invalide." });
         return;
       }
 
-      const examId = Number(req.params.id);
-      const reponses = req.body.reponses;
+      const { reponses } = req.body;
 
       if (!Array.isArray(reponses) || reponses.length === 0) {
-        res.status(400).json({ message: 'La liste des réponses est requise.' });
+        res.status(400).json({ message: 'La liste des réponses est requise et ne peut pas être vide.' });
         return;
       }
 
       const soumissionData: CreateSoumissionDTO = {
-        userId: req.user.id,
+        userId: req.user!.id, 
         examenId: examId,
         dateSoumission: new Date(),
       };
 
-      const soumission = await this.myService.submitExamen(soumissionData, soumissionData.examenId);
+      
+      const result = await this.myService.submitExamen(soumissionData, examId);
 
-        res.status(201).json(soumission);
-      }
-          catch (err) {
+      res.status(201).json(result);
+    } catch (err) {
       const error = err as Error;
       res.status(400).json({ message: error.message });
     }
