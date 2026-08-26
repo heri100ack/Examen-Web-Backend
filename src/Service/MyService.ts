@@ -1,7 +1,7 @@
 
 
 import { Examen, ExamenAvecQuestionsEtLesReponses, ExamenPublique } from "../model/Examen";
-import { CreateSoumissionDTO, Soumission } from "../model/Soumission";
+import { CreateSoumissionDTO, Soumission, SoumissionAvecReponses } from "../model/Soumission";
 import { Question, QuestionAvecReponses, QuestionPublique } from "../model/Question";
 import { Reponse, toReponsesPubliques } from "../model/Response";
 import { Resultat } from "../model/Resultat";
@@ -11,12 +11,13 @@ import { ResponseRepository } from "../repository/ResponseRepository";
 import { SoumissionRepository } from "../repository/SoumissionRepository";
 import { ResponsesEtudiantRepository } from "../repository/ResponsesEtudiantRepository";
 import { ResponsesEtudiant } from "../model/ResponsesEtudiant";
-import { CompteEleve } from "../model/Compte";
+import { CompteRepository } from "../repository/CompteRepository";
+
 
 
 
 export class MyService{ 
-    
+    private compteRepository = new CompteRepository ;
     private examenRepository = new ExamenRepository;
     private questionRepository = new QuestionRepository;
     private reponseRepository = new ResponseRepository;
@@ -32,6 +33,7 @@ export class MyService{
             return { ...q, reponses: toReponsesPubliques(reponses) };
             })
         );
+        
 
         return { ...examen, questions: questionsPubliques };
     }
@@ -82,7 +84,7 @@ export class MyService{
         return this.buildExamenAvecQuestions(examen); 
     }
 
-    async submitExamen(data: CreateSoumissionDTO, id: number): Promise<CreateSoumissionDTO | null> {
+    async submitExamen(data: Omit <SoumissionAvecReponses, 'id'>, id: number): Promise<Omit <SoumissionAvecReponses, 'id'> | null> {
         const examen = await this.examenRepository.getExamenById(id);
         if (examen == null) return null;
 
@@ -90,6 +92,14 @@ export class MyService{
         if (dejaSoumis) {
             throw new Error('Cet examen a déjà été soumis.');
         }
+        const questionsTraitees = new Set<number>();
+
+            for (const rep of data.reponses) {
+            if (questionsTraitees.has(rep.questionId)) {
+                throw new Error(`Une seule réponse est autorisée par question (doublon sur la question ID: ${rep.questionId}).`);
+            }
+            questionsTraitees.add(rep.questionId);
+            }
 
         const soumission = await this.soumissionRepository.create({
             userId: data.userId,
@@ -97,7 +107,13 @@ export class MyService{
             dateSoumission: new Date(),
         });
 
-        return soumission; 
+        for (const rep of data.reponses){
+        await this.responsesEtudiantRepository.CreateReponsesBySoumissionId(soumission.id,rep);
+        }
+        return {
+            ...soumission,
+            reponses: data.reponses
+        };
     }
 
 
@@ -106,7 +122,7 @@ export class MyService{
 
     return Promise.all(
         soumissions.map(async (soumission: Soumission): Promise<Resultat> => {
-            // 1. Récupération parallèle des données de l'examen et de la soumission
+            
             const [reponsesEtudiant, listQuestions, examen] = await Promise.all([
                 this.responsesEtudiantRepository.findBySoumissionId(soumission.id),
                 this.questionRepository.findByExamenId(soumission.examenId),
@@ -134,6 +150,8 @@ export class MyService{
 
             return {
                 idExamen: soumission.examenId,
+                EtudiantId: studentId,
+                NomEtudiant: (await this.compteRepository.findById(studentId))?.nom ?? 'Étudiant inconnu',
                 note: note,
                 total: barèmeTotal,
                 examenTitre: examen?.titre ?? 'Examen supprimé',

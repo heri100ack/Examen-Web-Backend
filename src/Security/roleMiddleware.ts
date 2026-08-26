@@ -1,5 +1,5 @@
 import { Response, NextFunction } from 'express';
-import { AuthRequest } from './authMiddleware';
+import { AuthRequest } from './AuthMiddleware';
 import { Role } from '../model/Compte';
 
 export function requireRole(...roles: Role[]) {

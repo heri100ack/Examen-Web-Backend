@@ -1,26 +1,28 @@
-import { StudentRepository } from '../repository/StudentRepository';
-import { CreateStudentDTO, UpdateStudentDTO } from '../model/Student';
+import { StudentRepository } from '../repository/StudentRepository'
+import {CompteEleve, CreateStudentDTO} from '../model/Compte'
+import bcrypt from 'bcryptjs';
 
-export class StudentService {
-    private repo = new StudentRepository();
+export class StudentService { 
+    private studentRepository = new StudentRepository;
+    async Save (Compte:CreateStudentDTO):Promise <Omit<CompteEleve, 'passwordHash'>>{ 
+        const { password, ...autresDonnees } = Compte;
 
-    getAll() {
-        return this.repo.findAll();
+        const passwordHash = await bcrypt.hash(password, 10);
+
+        const comptePourBDD = {
+            ...autresDonnees,
+            passwordHash
+        };
+
+        return await this.studentRepository.create(comptePourBDD);
     }
-
-    getById(id: number) {
-        return this.repo.findById(id);
+    async getAll ():Promise <Omit<CompteEleve, 'passwordHash'>[]>{ 
+        return this.studentRepository.findAll();
     }
-
-    create(data: CreateStudentDTO) {
-        return this.repo.create(data);
+    async update (Compte:Partial<Omit<CompteEleve, 'id'>>,compteId: number):Promise <Omit<CompteEleve, 'passwordHash'>| null>{ 
+        return this.studentRepository.update(compteId,Compte);
     }
-
-    update(id: number, data: UpdateStudentDTO) {
-        return this.repo.update(id, data);
-    }
-
-    deactivate(id: number) {
-        return this.repo.deactivate(id);
+    async delete (CompteId:number ):Promise <boolean>{
+        return this.studentRepository.delete(CompteId);
     }
 }

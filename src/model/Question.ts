@@ -7,6 +7,7 @@ export interface Question {
   type: string;
   points: number;
 }
+export type CreateQuestion = Omit<Question, 'id'>;
 
 export interface QuestionAvecReponses extends Question {
   reponses: Reponse[];
@@ -16,4 +17,3 @@ export interface QuestionPublique extends Question {
   reponses: ReponsePublique[];
 }
 
-export type CreateQuestion = Omit<Question, 'id'>;

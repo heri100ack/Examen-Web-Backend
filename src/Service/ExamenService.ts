@@ -1,33 +1,121 @@
-import { Examen, ExamenPublique, ExamenAvecQuestionsEtLesReponses } from '../model/Examen';
+import { Examen } from "../model/Examen";
+import { HttpError } from '../Security/HttpError';
+import { CreateQuestion, Question, QuestionAvecReponses } from "../model/Question";
+import { ExamenRepository } from "../repository/ExamenRepository";
+import { QuestionRepository } from "../repository/QuestionRepository";
+import { Resultat} from '../model/Resultat'
+import { SoumissionRepository } from '../repository/SoumissionRepository';
+import { ResponseRepository } from '../repository/ResponseRepository';
+import { ResponsesEtudiantRepository } from "../repository/ResponsesEtudiantRepository";
+import { ResponsesEtudiant } from "../model/ResponsesEtudiant";
+import { Reponse } from "../model/Response";
+import { throws } from "node:assert";
+import { error } from "node:console";
+import { StudentRepository } from "../repository/StudentRepository";
 
-export class ExamenService {
-async getAllExams(): Promise<ExamenPublique[]> {
-        const examens: ExamenPublique[] = [];
-    return examens;
+export class ExamenService { 
+    private questionRepository = new QuestionRepository ;
+    private examenRepository = new ExamenRepository ; 
+    private soumissionRepository = new SoumissionRepository; 
+    private responseRepository = new ResponseRepository;
+    private responseEtudiantRepository =new ResponsesEtudiantRepository;
+    private studentRepository = new StudentRepository;
+    
+    async getAllExamens():Promise<Examen[]>{
+        const Examens = this.examenRepository.findAll();
+     return Examens ;
+    }
+
+    async getAllQuestions(Examen: number ): Promise<Question[]> {
+        const Questions = this.questionRepository.findByExamenId(Examen);
+    
+     return Questions;
+    }
+
+    async getExamById (Examen: number ): Promise<Examen> {
+        const Exam = this.examenRepository.getExamenById(Examen);
+
+     return Exam;
+    }
+
+    async updateExam(id: number, data: Partial<Examen>): Promise<Examen | null> {
+    if (data.dateDebut && data.dateFin && new Date(data.dateDebut) > new Date(data.dateFin)) {
+      throw new Error("La date de début ne peut pas être supérieure à la date de fin.");
+    }
+    return await this.examenRepository.update(id, data);
   }
 
-async getExamById(id: number): Promise<Examen | null> {
-    return null;
-}
+    async AddQuestion(nouvelleQuestion: Omit<QuestionAvecReponses,'id'>): Promise<void> {
+    
+    if (!nouvelleQuestion.reponses || nouvelleQuestion.reponses.length < 2 || nouvelleQuestion.reponses.length > 6) {
+        throw new HttpError(400, "Une question doit comporter entre 2 et 6 choix de réponses.");
+    }
 
-async createExam(data: Omit<Examen, 'id' | 'dateCreation'>): Promise<Examen> {
-    const newExam: Examen = { id: Date.now(),...data, dateCreation: new Date()
-    };
-    return newExam;
-}
+    let nombreReponsesVraies = 0;
+    for (const rep of nouvelleQuestion.reponses) {
+        if (rep.estCorrecte === true) {
+        nombreReponsesVraies++;
+        }
+    }
 
-async updateExam(id: number, updateData: Partial<Examen>): Promise<Examen | null> {
-    return null;
-}
+    if (nombreReponsesVraies === 0) {
+        throw new HttpError(400, "La question doit contenir au moins une réponse correcte.");
+    }
+    if (nombreReponsesVraies > 1){ 
+        throw new HttpError(422, "La question doit contenir qu une réponse correcte.");
+    }
+    const Question = await this.questionRepository.Save(nouvelleQuestion);
 
-async deleteExam(id: number): Promise<boolean> {
-    return true;
-}
+    for (const rep of nouvelleQuestion.reponses) {
+        await this.responseRepository.CreateReponseWithHisQuestions(rep, Question.id);
+    }
+    
+    ;
+    }
+    async deleteExam(ExamId: number) : Promise <boolean>{ 
+        return this.examenRepository.delete(ExamId);
+    }
 
-async getFullExam(id: number): Promise<ExamenAvecQuestionsEtLesReponses | null> {
-    return null;
-}
+    async getAllResuslts(examenId: number): Promise <Resultat[]>{
+        const toutSoumission = await this.soumissionRepository.findByExamen(examenId);
+        const LesQuestions = await this.questionRepository.findByExamenId(examenId);
+        const bonnesReponses = new Map<number, number>();
+        let barèmeTotal = 0;
 
-}
+        
+        for (const question of LesQuestions) {
+            const bonneReponse = await this.responseRepository.findCorrectAnswerByQuestionId(question.id);
+            barèmeTotal= barèmeTotal + question.points;
+            if (bonneReponse) {
+            bonnesReponses.set(question.id, bonneReponse.id);
+            }
+        }
+        const listResultat: Resultat[] = [];
+            for (const soumission of toutSoumission) {
+                const reponsesSoumission: ResponsesEtudiant[] =
+                await this.responseEtudiantRepository.findBySoumissionId(soumission.id);
 
-export const examenService = new ExamenService();
+                let note = 0;
+
+                for (const reponse of reponsesSoumission) {
+                const bonneReponseId = bonnesReponses.get(reponse.questionId);
+                if (bonneReponseId !== undefined && reponse.reponseId === bonneReponseId) {
+                    const noteQuestion = this.questionRepository.findById(reponse.questionId);
+                    note = note + (await noteQuestion).points;
+                }
+                }
+
+                // ce format est encore provisoire
+                listResultat.push({
+                idExamen: soumission.examenId, 
+                EtudiantId: soumission.userId, 
+                NomEtudiant: (await this.studentRepository.findById(soumission.userId)).nom,
+                note: note,   
+                total: barèmeTotal,
+                examenTitre:  "matiere",
+                });
+            }
+
+        return listResultat;
+            }
+}

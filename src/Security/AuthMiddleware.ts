@@ -2,12 +2,14 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { Role } from '../model/Compte';
 
+export interface UserPayload {
+  id: number;
+  role: Role;
+  groupeId?: number;
+}
+
 export interface AuthRequest extends Request {
-  user?: {
-    id: number;
-    role: Role;
-    groupeId?: number; 
-  };
+  user?: UserPayload;
 }
 
 export function authMiddleware(req: AuthRequest, res: Response, next: NextFunction): void {
@@ -22,12 +24,7 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
   const secret = process.env.JWT_SECRET || 'votre_cle_par_defaut_dev';
 
   try {
-
-    const payload = jwt.verify(token, secret) as {
-      id: number;
-      role: Role;
-      groupeId?: number;
-    };
+    const payload = jwt.verify(token, secret) as UserPayload;
 
     req.user = {
       id: payload.id,

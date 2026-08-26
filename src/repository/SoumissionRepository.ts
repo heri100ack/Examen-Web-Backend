@@ -1,4 +1,4 @@
-import { promises } from 'node:dns';
+
 import pool from '../configuration/database';
 import { CreateSoumissionDTO, Soumission } from '../model/Soumission';
 
@@ -22,19 +22,24 @@ export class SoumissionRepository {
   }
 
 //    probleme de creation avec ce code 
-   async create(data: CreateSoumissionDTO): Promise<Soumission> {
+   async create(data: Omit <Soumission,'id'>): Promise<Soumission> {
     const query = `
       INSERT INTO soumission (user_id, examen_id, date_soumission)
       VALUES ($1, $2, $3)
       RETURNING *
     `;
-
+    
     const values = [data.userId, data.examenId, data.dateSoumission];
-
     const result = await pool.query<Soumission>(query, values);
 
     return result.rows[0];
   }
-
+    async findByExamen (ExamId : number ): Promise <Soumission[]>{ 
+      const recup = await pool.query(
+        'SELECT * FROM soumission WHERE examen_id = $1', 
+        [ExamId]
+      ); 
+      return recup.rows||null;
+    }
 
 }
