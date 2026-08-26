@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import * as examenControler from '../controler/ExamenControler';
-import { authMiddleware } from '../Security/authMiddleware';
+import { authMiddleware } from '../Security/AuthMiddleware';
 import { requireRole } from '../Security/roleMiddleware';
 
 const router = Router();

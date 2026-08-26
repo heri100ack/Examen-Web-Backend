@@ -37,7 +37,7 @@ export class ExamenRepository {
       'SELECT * FROM examen WHERE groupe_id = $1', 
       [GroupeId]
     ); 
-    return recup.rows||null;
+    return recup.rows;
     }
     async findAll(): Promise<Examen[]> { 
       const recup = await pool.query<Examen>('SELECT * FROM examen'); 

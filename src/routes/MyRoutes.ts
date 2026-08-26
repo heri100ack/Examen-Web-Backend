@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { MyControler } from '../controler/MyControler';
 import { MyService } from '../Service/MyService';
-import { authMiddleware } from '../Security/authMiddleware';
+import { authMiddleware } from '../Security/AuthMiddleware';
 import { requireRole } from '../Security/roleMiddleware';
 
 
