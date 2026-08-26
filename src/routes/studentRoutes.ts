@@ -4,13 +4,13 @@ import { authMiddleware } from '../Security/AuthMiddleware';
 import { requireRole } from '../Security/roleMiddleware';
 
 const router = Router();
-const studentControler = new StudentControler;
+const studentControler = new StudentControler();
 
 router.use(authMiddleware, requireRole('ADMIN'));
 
-router.get('/', compteControler.getAll);
-router.post('/', compteControler.create);
-router.put('/:id', compteControler.update);
-router.delete('/:id', compteControler.delete);
+router.get('/', StudentControler.getAll);
+router.get('/id', StudentControler.getById);
+router.post('/', StudentControler.create);
+router.put('/:id', StudentControler.update);
 
 export default router;
