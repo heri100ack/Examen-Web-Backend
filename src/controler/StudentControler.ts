@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { CompteEleve } from "../model/Compte";
+import { CompteEleve, CreateStudentDTO } from "../model/Compte";
 import { StudentService } from "../Service/StudentService";
 import { AuthRequest} from '../Security/AuthMiddleware';
 
@@ -17,22 +17,23 @@ export class StudentControler {
         };
     
     post = async (req: AuthRequest, res: Response): Promise<void> => {
-    try {
-      const studentData: Omit<CompteEleve, 'id'> = req.body;
-      const { nom, email, groupeId, role } = studentData;
+  try {
+    const studentData: CreateStudentDTO = req.body;
+    const { nom, email, password, groupeId, role } = studentData;
 
-      if (!nom || !email || !groupeId || role === undefined) {
-        res.status(400).json({ message: "Les champs nom, email, groupeId, role sont requis." });
-        return;
-      }
-
-      const newStudent = await this.studentService.Save(studentData);
-      res.status(201).json({ message: "Élève créé avec succès", data: newStudent });
-    } catch (error) {
-      const err = error as Error;
-      res.status(500).json({ message: "Erreur lors de la création de l'élève", error: err.message });
+    
+    if (!nom || !email || !password || !groupeId || role === undefined) {
+      res.status(400).json({ message: "Les champs nom, email, password, groupeId et role sont requis." });
+      return;
     }
-  };
+
+    const newStudent = await this.studentService.Save(studentData);
+    res.status(201).json({ message: "Élève créé avec succès", data: newStudent });
+  } catch (error) {
+    const err = error as Error;
+    res.status(500).json({ message: "Erreur lors de la création de l'élève", error: err.message });
+  }
+};
     
     update = async (req: AuthRequest, res: Response): Promise<void> => {
     try {

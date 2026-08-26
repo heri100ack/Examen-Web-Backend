@@ -1,6 +1,6 @@
 import jwt, { SignOptions } from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import { AuthentificationCompte } from '../model/Compte.js';
+import { AuthentificationCompte } from '../model/Compte'; 
 
 dotenv.config();
 
@@ -15,6 +15,11 @@ export const signAccessToken = (user: AuthentificationCompte): string =>
   jwt.sign(user, secret, { expiresIn: EXPIRES_IN });
 
 export const verifyAccessToken = (token: string): AuthentificationCompte => {
-  const { id, email, role } = jwt.verify(token, secret) as AuthentificationCompte;
-  return { id, email, role };
+  const decoded = jwt.verify(token, secret) as AuthentificationCompte;
+  return {
+    id: decoded.id,
+    nom: decoded.nom,
+    email: decoded.email,
+    role: decoded.role
+  };
 };

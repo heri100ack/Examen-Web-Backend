@@ -1,9 +1,20 @@
 import { StudentRepository } from '../repository/StudentRepository'
-import {CompteEleve} from '../model/Compte'
+import {CompteEleve, CreateStudentDTO} from '../model/Compte'
+import bcrypt from 'bcryptjs';
+
 export class StudentService { 
     private studentRepository = new StudentRepository;
-    async Save (Compte:Omit<CompteEleve, 'id'>):Promise <Omit<CompteEleve, 'passwordHash'>>{ 
-        return this.studentRepository.create(Compte);
+    async Save (Compte:CreateStudentDTO):Promise <Omit<CompteEleve, 'passwordHash'>>{ 
+        const { password, ...autresDonnees } = Compte;
+
+        const passwordHash = await bcrypt.hash(password, 10);
+
+        const comptePourBDD = {
+            ...autresDonnees,
+            passwordHash
+        };
+
+        return await this.studentRepository.create(comptePourBDD);
     }
     async getAll ():Promise <Omit<CompteEleve, 'passwordHash'>[]>{ 
         return this.studentRepository.findAll();

@@ -1,7 +1,7 @@
 
 
 import  pool  from '../db';
-import { Compte ,CompteEleve } from '../model/Compte';
+import { Compte ,CompteEleve, comptePourBDD } from '../model/Compte';
 
 export class StudentRepository {
   async findAll(): Promise<Omit<CompteEleve,'passwordHash'>[]> {
@@ -15,7 +15,7 @@ export class StudentRepository {
     ); 
     return recup.rows[0]||null;
   }
-  async create(data: Omit<CompteEleve, 'id'>): Promise<Omit<CompteEleve, 'passwordHash'>> {
+  async create(data: comptePourBDD): Promise<Omit<CompteEleve, 'passwordHash'>> {
   const query = `
     INSERT INTO student (
       nom, 
