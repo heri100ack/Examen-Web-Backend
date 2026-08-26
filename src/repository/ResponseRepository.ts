@@ -16,4 +16,10 @@ export class ResponseRepository{
     ); 
     return recup.rows[0]||null;
     }
+    async CreateReponseWithHisQuestions(Reponse : Reponse ,QuestionId : number ){ 
+       const query = `
+        INSERT INTO reponse (texte, est_correcte, question_id)
+        VALUES ($1, $2, $3);
+      `;
+    }
 }

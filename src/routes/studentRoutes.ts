@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import {} from '../controler/StudentControler';
-import { authMiddleware } from '../Security/authMiddleware';
+import { StudentControler } from '../controler/StudentControler';
+import { authMiddleware } from '../Security/AuthMiddleware';
 import { requireRole } from '../Security/roleMiddleware';
 
 const router = Router();
-const compteControler = new CompteControler(/* ... */);
+const studentControler = new StudentControler;
 
 router.use(authMiddleware, requireRole('ADMIN'));
 

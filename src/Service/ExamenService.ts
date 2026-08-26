@@ -1,5 +1,6 @@
 import { Examen } from "../model/Examen";
-import { CreateQuestion, Question } from "../model/Question";
+import { HttpError } from '../Security/HttpError';
+import { CreateQuestion, Question, QuestionAvecReponses } from "../model/Question";
 import { ExamenRepository } from "../repository/ExamenRepository";
 import { QuestionRepository } from "../repository/QuestionRepository";
 import { Resultat} from '../model/Resultat'
@@ -7,6 +8,9 @@ import { SoumissionRepository } from '../repository/SoumissionRepository';
 import { ResponseRepository } from '../repository/ResponseRepository';
 import { ResponsesEtudiantRepository } from "../repository/ResponsesEtudiantRepository";
 import { ResponsesEtudiant } from "../model/ResponsesEtudiant";
+import { Reponse } from "../model/Response";
+import { throws } from "node:assert";
+import { error } from "node:console";
 
 export class ExamenService { 
     private questionRepository = new QuestionRepository ;
@@ -39,8 +43,29 @@ export class ExamenService {
     return await this.examenRepository.update(id, data);
   }
 
-    async AddQuestion(nouvelleQuestion : CreateQuestion){ 
-        this.questionRepository.Save(nouvelleQuestion);
+    async AddQuestion(nouvelleQuestion: Omit<QuestionAvecReponses,'id'>): Promise<void> {
+    
+    if (!nouvelleQuestion.reponses || nouvelleQuestion.reponses.length < 2 || nouvelleQuestion.reponses.length > 6) {
+        throw new HttpError(400, "Une question doit comporter entre 2 et 6 choix de réponses.");
+    }
+
+    let nombreReponsesVraies = 0;
+    for (const rep of nouvelleQuestion.reponses) {
+        if (rep.estCorrecte === true) {
+        nombreReponsesVraies++;
+        }
+    }
+
+    if (nombreReponsesVraies === 0) {
+        throw new HttpError(400, "La question doit contenir au moins une réponse correcte.");
+    }
+    const Question = await this.questionRepository.Save(nouvelleQuestion);
+
+    for (const rep of nouvelleQuestion.reponses) {
+        await this.responseRepository.CreateReponseWithHisQuestions(rep, Question.id);
+    }
+    
+    ;
     }
     async deleteExam(ExamId: number) : Promise <boolean>{ 
         return this.examenRepository.delete(ExamId);

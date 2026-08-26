@@ -3,6 +3,7 @@ import { Examen } from '../model/Examen';
 
 
 export class ExamenRepository { 
+  
     async delete(id: number): Promise<boolean> { 
       const query = 'DELETE FROM examen WHERE id = $1 RETURNING id;';
       const result = await pool.query(query, [id]);

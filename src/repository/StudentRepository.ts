@@ -5,7 +5,7 @@ import { Compte ,CompteEleve } from '../model/Compte';
 
 export class StudentRepository {
   async findAll(): Promise<Omit<CompteEleve,'passwordHash'>[]> {
-    const recup = await pool.query('SELECT * FROM compte WHERE Role = $1',[]);
+    const recup = await pool.query('SELECT * FROM compte WHERE Role = $1',['STUDENT']);
     return recup.rows;
   }
   async findById(id: number): Promise<Omit<CompteEleve,'passwordHash'>> {

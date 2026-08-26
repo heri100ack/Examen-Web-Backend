@@ -1,7 +1,7 @@
-import { Request, Response } from 'express';
+import { Request, response, Response } from 'express';
 import { Examen } from '../model/Examen';
 import { ExamenService } from '../Service/ExamenService';
-import { CreateQuestion } from '../model/Question';
+import { CreateQuestion, QuestionAvecReponses } from '../model/Question';
 
 export class ExamenControler { 
   constructor(private examenService: ExamenService) {}
@@ -20,7 +20,7 @@ export class ExamenControler {
   try {
     const examId = Number(req.params.id);
     const Exam = await this.examenService.getExamById(examId);
-    res.status(200).json({ id: examId });
+    res.status(200).json({Exam});
   } catch (error) {
     res.status(500).json({ message: "Internal server error", error });
   }
@@ -55,7 +55,7 @@ export class ExamenControler {
       return;
     }
 
-    const updateData = req.body as Partial<Examen>;
+   const updateData = req.body as Partial<Examen>;
 
     if (Object.keys(updateData).length === 0) {
       res.status(400).json({ message: "Aucune donnée fournie pour la mise à jour." });
@@ -64,7 +64,7 @@ export class ExamenControler {
     const updatedExam = await this.examenService.updateExam(examId, updateData);
     res.status(200).json({ 
       message: `Exam ${examId} updated successfully`,
-      data: updateData 
+      data: updatedExam
     });
   } catch (error) {
     res.status(500).json({ message: "Error updating exam", error });
@@ -105,16 +105,15 @@ export class ExamenControler {
   } catch (error) {
     res.status(500).json({ message: "Error when intercepting exams", error });
   }
-};
+  };
 
-  createQuestionOfExam = async (
-  req: Request<{ examenId: string }, {}, CreateQuestion>,
+  postQuestionOfExam = async (
+  req: Request<{ examenId: string }, {}, Omit <QuestionAvecReponses,'id'>>,
   res: Response
 ): Promise<void> => {
   try {
-  
     const examenId = Number(req.params.examenId);
-    const { texte, type, points } = req.body;
+    const { texte, type, points ,reponses } = req.body;
 
     if (isNaN(examenId) || !points || !type || !texte) {
       res.status(400).json({ message: "L'ID de l'examen, le texte, le type et les points sont requis." });
@@ -125,7 +124,8 @@ export class ExamenControler {
       examenId, 
       texte,
       type,
-      points 
+      points,
+      reponses
     };
     
     await this.examenService.AddQuestion(nouvelleQuestion);
