@@ -11,6 +11,7 @@ import { ResponsesEtudiant } from "../model/ResponsesEtudiant";
 import { Reponse } from "../model/Response";
 import { throws } from "node:assert";
 import { error } from "node:console";
+import { StudentRepository } from "../repository/StudentRepository";
 
 export class ExamenService { 
     private questionRepository = new QuestionRepository ;
@@ -18,6 +19,7 @@ export class ExamenService {
     private soumissionRepository = new SoumissionRepository; 
     private responseRepository = new ResponseRepository;
     private responseEtudiantRepository =new ResponsesEtudiantRepository;
+    private studentRepository = new StudentRepository;
     
     async getAllExamens():Promise<Examen[]>{
         const Examens = this.examenRepository.findAll();
@@ -107,9 +109,10 @@ export class ExamenService {
                 listResultat.push({
                 idExamen: soumission.examenId, 
                 EtudiantId: soumission.userId, 
+                NomEtudiant: (await this.studentRepository.findById(soumission.userId)).nom,
                 note: note,   
                 total: barèmeTotal,
-                examenTitre:  "matiere"
+                examenTitre:  "matiere",
                 });
             }
 

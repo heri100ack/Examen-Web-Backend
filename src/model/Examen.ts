@@ -5,6 +5,7 @@ import { QuestionAvecReponses, QuestionPublique } from "./Question";
      id: number;
      matiereId: number;   
      titre: string;
+     description : string ;
      dateCreation: Date;
      dateDebut: Date;
      dateFin: Date;

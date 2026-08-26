@@ -28,9 +28,9 @@ export class ExamenControler {
 
  createExam = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { matiereId, titre, dateDebut, dateFin, groupeId } = req.body as Omit<Examen, 'id' | 'dateCreation'>;
+    const { matiereId, titre, dateDebut, dateFin, groupeId ,description} = req.body as Omit<Examen, 'id' | 'dateCreation'>;
 
-    if (!titre || !matiereId || !groupeId || !dateDebut || !dateFin) {
+    if (!titre || !matiereId || !groupeId || !dateDebut || !dateFin || !description) {
       res.status(400).json({ message: "Title, subject ID, group ID, and dates are required." });
       return;
     }

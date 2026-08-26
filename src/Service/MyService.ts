@@ -11,12 +11,13 @@ import { ResponseRepository } from "../repository/ResponseRepository";
 import { SoumissionRepository } from "../repository/SoumissionRepository";
 import { ResponsesEtudiantRepository } from "../repository/ResponsesEtudiantRepository";
 import { ResponsesEtudiant } from "../model/ResponsesEtudiant";
+import { CompteRepository } from "../repository/CompteRepository";
 
 
 
 
 export class MyService{ 
-    
+    private compteRepository = new CompteRepository ;
     private examenRepository = new ExamenRepository;
     private questionRepository = new QuestionRepository;
     private reponseRepository = new ResponseRepository;
@@ -32,6 +33,7 @@ export class MyService{
             return { ...q, reponses: toReponsesPubliques(reponses) };
             })
         );
+        
 
         return { ...examen, questions: questionsPubliques };
     }
@@ -135,6 +137,7 @@ export class MyService{
             return {
                 idExamen: soumission.examenId,
                 EtudiantId: studentId,
+                NomEtudiant: (await this.compteRepository.findById(studentId))?.nom ?? 'Étudiant inconnu',
                 note: note,
                 total: barèmeTotal,
                 examenTitre: examen?.titre ?? 'Examen supprimé',
