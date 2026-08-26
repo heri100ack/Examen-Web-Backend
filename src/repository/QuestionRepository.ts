@@ -27,5 +27,26 @@ export class QuestionRepository {
 
     return recup.rows[0];
   }
+    async update(id: number, data: Partial<Question>): Promise<Question> {
+    const { texte, type, points } = data;
+    const query = `
+      UPDATE questions 
+      SET 
+        texte = COALESCE($1, texte), 
+        type = COALESCE($2, type), 
+        points = COALESCE($3, points)
+      WHERE id = $4
+      RETURNING *;
+    `;
+    const values = [texte, type, points, id];
+    const result = await pool.query(query, values);
+    return result.rows[0];
+  }
+
+  async delete(id: number): Promise<boolean> {
+    const query = `DELETE FROM questions WHERE id = $1;`;
+    const result = await pool.query(query, [id]);
+    return (result.rowCount ?? 0) > 0;
+  }
 }
   

@@ -17,4 +17,3 @@ export interface QuestionPublique extends Question {
   reponses: ReponsePublique[];
 }
 
-export type CreateQuestion = Omit<Question, 'id'>;

@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { AuthRequest } from '../Security/authMiddleware';
+import { AuthRequest } from '../Security/AuthMiddleware';
 import { MyService } from '../Service/MyService';
 import { CreateSoumissionDTO } from '../model/Soumission';
 

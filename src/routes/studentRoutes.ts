@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { CompteControler } from '../controler/CompteControler';
+import {} from '../controler/StudentControler';
 import { authMiddleware } from '../Security/authMiddleware';
 import { requireRole } from '../Security/roleMiddleware';
 
