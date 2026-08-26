@@ -59,6 +59,9 @@ export class ExamenService {
     if (nombreReponsesVraies === 0) {
         throw new HttpError(400, "La question doit contenir au moins une réponse correcte.");
     }
+    if (nombreReponsesVraies > 1){ 
+        throw new HttpError(422, "La question doit contenir qu une réponse correcte.");
+    }
     const Question = await this.questionRepository.Save(nouvelleQuestion);
 
     for (const rep of nouvelleQuestion.reponses) {
