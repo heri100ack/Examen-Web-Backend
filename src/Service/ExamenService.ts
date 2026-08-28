@@ -118,4 +118,34 @@ export class ExamenService {
 
         return listResultat;
             }
+
+    async submitExamen(examenId: number, userId: number, reponses: { questionId: number; reponseId: number }[]) {
+        const soumissionsExamen = await this.soumissionRepository.findByExamen(examenId);
+        const dejaSoumis = soumissionsExamen.some(s => s.userId === userId);
+
+        if (dejaSoumis) {
+            throw new HttpError(400, "Vous avez déjà soumis cet examen.");
+        }
+
+        const examen = await this.examenRepository.getExamenById(examenId);
+        if (!examen) {
+            throw new HttpError(404, "Examen non trouvé.");
+        }
+
+        const nouvelleSoumission = await this.soumissionRepository.create({
+            examenId: examenId,
+            userId: userId,
+            dateSoumission: new Date()
+        });
+
+        for (const rep of reponses) {
+            await this.responseEtudiantRepository.CreateReponsesBySoumissionId({
+                soumissionId: nouvelleSoumission.id,
+                questionId: rep.questionId,
+                reponseId: rep.reponseId
+            });
+        }
+        
+        return nouvelleSoumission;
+    }
 }
