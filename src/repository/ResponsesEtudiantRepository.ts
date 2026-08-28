@@ -9,7 +9,7 @@ export class ResponsesEtudiantRepository {
     ); 
     return recup.rows||null;
     }
-    async CreateReponsesBySoumissionId(soumissionId: number,reponses: ResponsesEtudiant): Promise<ResponsesEtudiant> {
+    async CreateReponsesBySoumissionId(soumissionId: number,reponses: Omit<ResponsesEtudiant,'id'>): Promise<ResponsesEtudiant> {
   
       const query = `
         INSERT INTO reponse_etudiant (soumission_id, question_id, reponse_id)

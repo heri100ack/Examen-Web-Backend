@@ -1,4 +1,5 @@
 import { QuestionAvecReponses, QuestionPublique } from "./Question";
+import { Reponse } from "./Response";
 
 
    export interface Examen {
@@ -20,3 +21,15 @@ import { QuestionAvecReponses, QuestionPublique } from "./Question";
   export interface ExamenPublique extends Examen {
     questions: QuestionPublique[];
   }
+
+  export interface ExamenAvecQuestions {
+  examen: Examen;
+  questions: {
+    id: number;
+    examenId: number;
+    texte: string;
+    type: string;
+    points: number;
+    reponses: Reponse[];
+  }[];
+}

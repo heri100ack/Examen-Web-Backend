@@ -1,4 +1,4 @@
-import { Examen } from "../model/Examen";
+import { Examen, ExamenAvecQuestions } from "../model/Examen";
 import { HttpError } from '../Security/HttpError';
 import { CreateQuestion, Question, QuestionAvecReponses } from "../model/Question";
 import { ExamenRepository } from "../repository/ExamenRepository";
@@ -45,7 +45,12 @@ export class ExamenService {
     return await this.examenRepository.update(id, data);
   }
 
-    async AddQuestion(nouvelleQuestion: Omit<QuestionAvecReponses,'id'>): Promise<void> {
+    async AddQuestion(nouvelleQuestion: Omit<QuestionAvecReponses,'id'>):Promise <ExamenAvecQuestions> {
+    
+    const soumissions = await this.soumissionRepository.findByExamen(nouvelleQuestion.examenId);
+    if (soumissions.length > 0) {
+        throw new HttpError(409, "Quelqu'un a déjà rendu son sujet.");
+    }
     
     if (!nouvelleQuestion.reponses || nouvelleQuestion.reponses.length < 2 || nouvelleQuestion.reponses.length > 6) {
         throw new HttpError(400, "Une question doit comporter entre 2 et 6 choix de réponses.");
@@ -54,24 +59,41 @@ export class ExamenService {
     let nombreReponsesVraies = 0;
     for (const rep of nouvelleQuestion.reponses) {
         if (rep.estCorrecte === true) {
-        nombreReponsesVraies++;
+            nombreReponsesVraies++;
         }
     }
 
     if (nombreReponsesVraies === 0) {
         throw new HttpError(400, "La question doit contenir au moins une réponse correcte.");
     }
-    if (nombreReponsesVraies > 1){ 
-        throw new HttpError(422, "La question doit contenir qu une réponse correcte.");
+    if (nombreReponsesVraies > 1) { 
+        throw new HttpError(422, "La question doit contenir qu'une réponse correcte.");
     }
-    const Question = await this.questionRepository.Save(nouvelleQuestion);
 
+    const Question = await this.questionRepository.Save(nouvelleQuestion);
+    
     for (const rep of nouvelleQuestion.reponses) {
         await this.responseRepository.CreateReponseWithHisQuestions(rep, Question.id);
     }
-    
-    ;
+
+    const recupExam = await this.examenRepository.getExamenById(nouvelleQuestion.examenId);
+
+    const QuestionsExamExist = await this.questionRepository.findByExamenId(nouvelleQuestion.examenId);
+
+    const questionsAvecReponses = [];
+    for (const q of QuestionsExamExist) {
+        const reponsesDeLaQuestion = await this.responseRepository.findByQuestionId(q.id);
+        questionsAvecReponses.push({
+            ...q,
+            reponses: reponsesDeLaQuestion
+        });
     }
+
+    return {
+        examen: recupExam,
+        questions: questionsAvecReponses
+    };}
+
     async deleteExam(ExamId: number) : Promise <boolean>{ 
         return this.examenRepository.delete(ExamId);
     }
@@ -139,12 +161,15 @@ export class ExamenService {
         });
 
         for (const rep of reponses) {
-            await this.responseEtudiantRepository.CreateReponsesBySoumissionId({
-                soumissionId: nouvelleSoumission.id,
-                questionId: rep.questionId,
-                reponseId: rep.reponseId
-            });
+    await this.responseEtudiantRepository.CreateReponsesBySoumissionId(
+        nouvelleSoumission.id,
+        {
+            soumissionId: nouvelleSoumission.id,
+            questionId: rep.questionId,
+            reponseId: rep.reponseId
         }
+    );
+}
         
         return nouvelleSoumission;
     }

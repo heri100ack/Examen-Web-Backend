@@ -108,13 +108,12 @@ export class ExamenControler {
   };
 
   postQuestionOfExam = async (
-  req: Request<{ examenId: string }, {}, Omit <QuestionAvecReponses,'id'>>,
+  req: Request<{ id: string }, {}, Omit <QuestionAvecReponses,'id'>>,
   res: Response
 ): Promise<void> => {
   try {
-    const examenId = Number(req.params.examenId);
+    const examenId = Number(req.params.id);
     const { texte, type, points ,reponses } = req.body;
-
     if (isNaN(examenId) || !points || !type || !texte) {
       res.status(400).json({ message: "L'ID de l'examen, le texte, le type et les points sont requis." });
       return;
@@ -128,11 +127,11 @@ export class ExamenControler {
       reponses
     };
     
-    await this.examenService.AddQuestion(nouvelleQuestion);
+    const result = await this.examenService.AddQuestion(nouvelleQuestion);
     
-    res.status(201).json({ message: "Question créée avec succès" });
+    res.status(201).json({ message: "Question créée avec succès" , Examen: result});
   } catch (error) {
-    res.status(500).json({ message: "Error creating question", error });
+    res.status(500).json({ message: "Error creation de question", error });
   }
 };
 
